@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/oliver-richman/tspec/compare/v1.1.0...v1.2.0) (2025-06-18)
+
+
+### Features
+
+* **ci:** separate CI jobs for individual status checks ([969e2ee](https://github.com/oliver-richman/tspec/commit/969e2ee9bd8926d73af26fa5af8050aa3b89ee03))
+
 # [1.1.0](https://github.com/oliver-richman/tspec/compare/v1.0.0...v1.1.0) (2025-06-18)
 
 
