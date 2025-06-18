@@ -2,7 +2,13 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "baseUrl": "../../",
+    "paths": {
+      "@tspec/core": ["packages/core/dist"],
+      "@tspec/assert": ["packages/assert/dist"],
+      "@tspec/mock": ["packages/mock/dist"]
+    }
   },
   "include": ["src/**/*"]
 } 
