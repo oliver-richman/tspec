@@ -1,12 +1,15 @@
 // Core mock types and interfaces
 
 export interface CallInfo {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   returnValue?: any;
   thrownError?: Error;
   timestamp: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface MockFunction<T extends (...args: any[]) => any = (...args: any[]) => any> {
   (...args: Parameters<T>): ReturnType<T>;
   
@@ -14,6 +17,7 @@ export interface MockFunction<T extends (...args: any[]) => any = (...args: any[
   mockReturnValue(value: ReturnType<T>): MockFunction<T>;
   mockReturnValueOnce(value: ReturnType<T>): MockFunction<T>;
   mockResolvedValue(value: Awaited<ReturnType<T>>): MockFunction<T>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mockRejectedValue(error: any): MockFunction<T>;
   mockImplementation(fn: T): MockFunction<T>;
   mockImplementationOnce(fn: T): MockFunction<T>;
@@ -23,8 +27,11 @@ export interface MockFunction<T extends (...args: any[]) => any = (...args: any[
   // Call tracking
   mock: {
     calls: CallInfo[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     results: { type: 'return' | 'throw'; value: any }[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     instances: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lastCall?: any[];
   };
   
@@ -41,6 +48,7 @@ export interface MockFunction<T extends (...args: any[]) => any = (...args: any[
   mockRestore(): void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface SpyFunction<T extends (...args: any[]) => any = (...args: any[]) => any> extends MockFunction<T> {
   original: T;
 }

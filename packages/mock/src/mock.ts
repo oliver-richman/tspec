@@ -213,6 +213,7 @@ export function createMockFunction<T extends (...args: any[]) => any>(
   return mockFn;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mock<T extends (...args: any[]) => any>(
   implementation?: T,
   options?: MockOptions
@@ -220,6 +221,7 @@ export function mock<T extends (...args: any[]) => any>(
   return createMockFunction(options?.name, implementation);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function fn<T extends (...args: any[]) => any>(
   implementation?: T
 ): MockFunction<T> {
