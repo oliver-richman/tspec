@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { findTestFiles, TestRunner, getSuites, clearSuites, loadConfig, validateConfig } from '@tspec/core';
+import { findTestFiles, TestRunner, getSuites, clearSuites, loadConfig, validateConfig, TestResult } from '@tspec/core';
 import { register } from 'tsx/esm/api';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'url';
@@ -119,7 +119,7 @@ async function runTests() {
     const validation = validateConfig(config);
     if (!validation.isValid) {
       console.error('Configuration validation failed:');
-      validation.errors.forEach(error => console.error(`  - ${error}`));
+      validation.errors.forEach((error: string) => console.error(`  - ${error}`));
       process.exit(1);
     }
 
@@ -140,7 +140,7 @@ async function runTests() {
 
     if (config.verbose) {
       console.log(`Found ${testFiles.length} test file(s):`);
-      testFiles.forEach(file => console.log(`  - ${file}`));
+      testFiles.forEach((file: string) => console.log(`  - ${file}`));
     } else if (!config.silent) {
       console.log(`Found ${testFiles.length} test file(s)`);
     }
@@ -175,7 +175,7 @@ async function runTests() {
     
     // Exit with error code if tests failed
     const results = runner.getResults();
-    const failedCount = results.filter(r => r.status === 'failed').length;
+    const failedCount = results.filter((r: TestResult) => r.status === 'failed').length;
     if (failedCount > 0) {
       process.exit(1);
     }
