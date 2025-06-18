@@ -85,7 +85,7 @@ function parseCliArgs(): CliOptions {
       testMatch: testMatch.length > 0 ? testMatch : undefined,
       watch: values.watch
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error parsing arguments:', (error as Error).message);
     process.exit(1);
   }
@@ -180,7 +180,7 @@ async function runTests() {
       process.exit(1);
     }
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error running tests:', error);
     process.exit(1);
   }

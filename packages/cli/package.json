@@ -27,8 +27,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@tspec/core": "^0.1.0",
-    "esbuild": "^0.25.5"
+    "@tspec/core": "*",
+    "esbuild": "^0.25.5",
+    "tsx": "^4.20.3"
   },
   "publishConfig": {
     "access": "public"
