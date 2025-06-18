@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
+      - name: Generate package READMEs
+        run: npm run readme:generate
+      
       - name: Build packages
         run: npm run build:deps
       

@@ -25,7 +25,9 @@
     "prepack": "npm run build",
     "release": "npx semantic-release",
     "release:dry": "npx semantic-release --dry-run",
-    "commit": "npx git-cz"
+    "commit": "npx git-cz",
+    "readme:generate": "node scripts/generate-package-readmes.js",
+    "prepublishOnly": "npm run readme:generate"
   },
   "keywords": [
     "typescript",
