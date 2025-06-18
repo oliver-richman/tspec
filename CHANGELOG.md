@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/oliver-richman/tspec/compare/v1.0.0...v1.1.0) (2025-06-18)
+
+
+### Features
+
+* **release:** automate root package.json version sync during releases ([f776d1c](https://github.com/oliver-richman/tspec/commit/f776d1c1dcca98434203e52959e6638732166a54))
+
 # 1.0.0 (2025-06-18)
 
 
