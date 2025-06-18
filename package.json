@@ -12,6 +12,7 @@
     "build:deps": "npm run build -w @tspec/core && npm run build -w @tspec/assert && npm run build -w @tspec/mock && npm run build -w @tspec/cli",
     "build:parallel": "npm run build --workspaces",
     "test": "node packages/cli/dist/index.js",
+    "typecheck": "tsc --noEmit --skipLibCheck",
     "lint": "npx eslint . --ext .ts,.tsx --max-warnings 0",
     "lint:fix": "npx eslint . --ext .ts,.tsx --fix",
     "format": "npx prettier --write .",
@@ -53,7 +54,7 @@
     "url": "https://github.com/oliver-richman/tspec/issues"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.3",

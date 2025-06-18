@@ -25,6 +25,9 @@ jobs:
       - name: Build packages
         run: npm run build:deps
       
+      - name: Verify CLI build
+        run: ls -la packages/cli/dist/
+      
       - name: Run tests
         run: npm test
       
@@ -55,6 +58,9 @@ jobs:
       
       - name: Build packages
         run: npm run build:deps
+      
+      - name: Verify CLI build
+        run: ls -la packages/cli/dist/
       
       - name: Dry run release
         env:
