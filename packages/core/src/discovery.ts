@@ -6,7 +6,7 @@ export async function findTestFiles(config?: TSpecConfig): Promise<string[]> {
   const patterns = config?.testMatch || ['**/*.tspec.ts'];
   const ignore = config?.testIgnore || ['**/node_modules/**', '**/dist/**', '**/build/**'];
   
-  let allFiles: string[] = [];
+  const allFiles: string[] = [];
   
   for (const pattern of patterns) {
     const files = await glob(pattern, {

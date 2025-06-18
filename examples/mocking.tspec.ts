@@ -15,12 +15,12 @@ class UserService {
 }
 
 class ApiClient {
-  async fetchUser(id: string): Promise<User> {
+  async fetchUser(_id: string): Promise<User> {
     // Simulate API call
     throw new Error('Real API call - should be mocked!');
   }
   
-  async saveUser(user: User): Promise<boolean> {
+  async saveUser(_user: User): Promise<boolean> {
     // Simulate save operation
     return true;
   }
@@ -32,31 +32,33 @@ interface User {
   birthYear: number;
 }
 
-// Simple mock implementation for testing
+// Simple mock implementation for testing  
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createSimpleMock<T extends (...args: any[]) => any>(): {
   fn: T;
-  calls: any[][];
-  returnValue?: any;
+  calls: Parameters<T>[];
+  returnValue?: ReturnType<T>;
   implementation?: T;
-  setReturnValue: (value: any) => void;
+  setReturnValue: (value: ReturnType<T>) => void;
   setImplementation: (impl: T) => void;
   getCallCount: () => number;
-  getLastCall: () => any[] | undefined;
-  wasCalledWith: (...args: any[]) => boolean;
+  getLastCall: () => Parameters<T> | undefined;
+  wasCalledWith: (...args: Parameters<T>) => boolean;
   reset: () => void;
 } {
-  const calls: any[][] = [];
-  let returnValue: any = undefined;
+  const calls: Parameters<T>[] = [];
+  let returnValue: ReturnType<T> | undefined = undefined;
   let implementation: T | undefined = undefined;
   
-  const mockFn = function(this: any, ...args: any[]): any {
-    calls.push([...args]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mockFn = function(this: any, ...args: Parameters<T>): ReturnType<T> {
+    calls.push(args);
     
     if (implementation) {
       return implementation.apply(this, args);
     }
     
-    return returnValue;
+    return returnValue as ReturnType<T>;
   } as T;
   
   return {
@@ -64,11 +66,11 @@ function createSimpleMock<T extends (...args: any[]) => any>(): {
     calls,
     get returnValue() { return returnValue; },
     get implementation() { return implementation; },
-    setReturnValue: (value: any) => { returnValue = value; },
+    setReturnValue: (value: ReturnType<T>) => { returnValue = value; },
     setImplementation: (impl: T) => { implementation = impl; },
     getCallCount: () => calls.length,
     getLastCall: () => calls.length > 0 ? calls[calls.length - 1] : undefined,
-    wasCalledWith: (...args: any[]) => calls.some(call => 
+    wasCalledWith: (...args: Parameters<T>) => calls.some(call => 
       call.length === args.length && call.every((arg, i) => arg === args[i])
     ),
     reset: () => {
@@ -242,13 +244,13 @@ describe('Advanced Mocking Patterns', () => {
   });
 
   test('conditional mock behavior', () => {
-    const mockFn = createSimpleMock<(type: string, value: any) => any>();
-    mockFn.setImplementation((type: string, value: any) => {
+    const mockFn = createSimpleMock<(type: string, value: unknown) => unknown>();
+    mockFn.setImplementation((type: string, value: unknown) => {
       switch (type) {
         case 'double':
-          return value * 2;
+          return typeof value === 'number' ? value * 2 : value;
         case 'uppercase':
-          return value.toString().toUpperCase();
+          return typeof value === 'string' ? value.toUpperCase() : String(value).toUpperCase();
         case 'error':
           throw new Error(`Error for ${value}`);
         default:

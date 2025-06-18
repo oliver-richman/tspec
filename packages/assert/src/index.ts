@@ -1,3 +1,5 @@
+type ContainExpected<T> = T extends string ? string : T extends readonly (infer U)[] ? U : never;
+
 export interface Expectation<T> {
   toBe(expected: T): void;
   toEqual(expected: T): void;
@@ -6,22 +8,24 @@ export interface Expectation<T> {
   toBeTruthy(): void;
   toBeFalsy(): void;
   toThrow(expectedError?: string | RegExp | Error): void;
-  toContain(expected: any): void;
+  toContain(expected: ContainExpected<T>): void;
   toMatch(expected: RegExp): void;
   toBeCloseTo(expected: number, precision?: number): void;
   resolves: AsyncExpectation<T>;
   rejects: AsyncExpectation<T>;
 }
 
-export interface AsyncExpectation<T> {
-  toBe(expected: any): Promise<void>;
-  toEqual(expected: any): Promise<void>;
+type PromiseValue<T> = T extends Promise<infer U> ? U : never;
+
+export interface AsyncExpectation<_T> {
+  toBe(expected: unknown): Promise<void>;
+  toEqual(expected: unknown): Promise<void>;
   toBeNull(): Promise<void>;
   toBeUndefined(): Promise<void>;
   toBeTruthy(): Promise<void>;
   toBeFalsy(): Promise<void>;
   toThrow(expectedError?: string | RegExp | Error): Promise<void>;
-  toContain(expected: any): Promise<void>;
+  toContain(expected: unknown): Promise<void>;
   toMatch(expected: RegExp): Promise<void>;
   toBeCloseTo(expected: number, precision?: number): Promise<void>;
 }
@@ -90,9 +94,9 @@ export function expect<T>(actual: T): Expectation<T> {
         }
       }
     },
-    toContain(expected: any) {
+    toContain(expected: ContainExpected<T>) {
       if (typeof actual === 'string') {
-        if (!actual.includes(expected)) {
+        if (!actual.includes(expected as string)) {
           throw new Error(`Expected "${actual}" to contain "${expected}"`);
         }
       } else if (Array.isArray(actual)) {
@@ -129,13 +133,13 @@ export function expect<T>(actual: T): Expectation<T> {
 
 function createAsyncExpectation<T>(actual: T, mode: 'resolves' | 'rejects'): AsyncExpectation<T> {
   return {
-    async toBe(expected: any): Promise<void> {
+    async toBe(expected: unknown): Promise<void> {
       const result = await handlePromise(actual, mode);
       if (result !== expected) {
         throw new Error(`Expected ${result} to be ${expected}`);
       }
     },
-    async toEqual(expected: any): Promise<void> {
+    async toEqual(expected: unknown): Promise<void> {
       const result = await handlePromise(actual, mode);
       if (!deepEqual(result, expected)) {
         throw new Error(`Expected ${JSON.stringify(result)} to equal ${JSON.stringify(expected)}`);
@@ -198,10 +202,10 @@ function createAsyncExpectation<T>(actual: T, mode: 'resolves' | 'rejects'): Asy
         }
       }
     },
-    async toContain(expected: any): Promise<void> {
+    async toContain(expected: unknown): Promise<void> {
       const result = await handlePromise(actual, mode);
       if (typeof result === 'string') {
-        if (!result.includes(expected)) {
+        if (!result.includes(expected as string)) {
           throw new Error(`Expected "${result}" to contain "${expected}"`);
         }
       } else if (Array.isArray(result)) {
@@ -236,7 +240,7 @@ function createAsyncExpectation<T>(actual: T, mode: 'resolves' | 'rejects'): Asy
   };
 }
 
-async function handlePromise<T>(actual: T, mode: 'resolves' | 'rejects'): Promise<any> {
+async function handlePromise<T>(actual: T, mode: 'resolves' | 'rejects'): Promise<PromiseValue<T> | unknown> {
   if (!(actual instanceof Promise)) {
     throw new Error(`Expected ${actual} to be a Promise`);
   }
@@ -255,7 +259,7 @@ async function handlePromise<T>(actual: T, mode: 'resolves' | 'rejects'): Promis
   }
 }
 
-function deepEqual(a: any, b: any): boolean {
+function deepEqual<T, U>(a: T, b: U): boolean {
   // Simple deep equality - enhance later
   return JSON.stringify(a) === JSON.stringify(b);
 } 
