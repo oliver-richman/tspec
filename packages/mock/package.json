@@ -1,6 +1,6 @@
 {
   "name": "@tspec/mock",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Mocking utilities for TSpec testing framework",
   "type": "module",
   "main": "dist/index.js",
