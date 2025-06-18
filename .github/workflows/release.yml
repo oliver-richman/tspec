@@ -22,12 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Build packages in order
-        run: |
-          npm run build:core
-          npm run build:assert
-          npm run build:mock
-          npm run build:cli
+      - name: Build packages
+        run: npm run build:deps
       
       - name: Run tests
         run: npm test
@@ -57,12 +53,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Build packages in order
-        run: |
-          npm run build:core
-          npm run build:assert
-          npm run build:mock
-          npm run build:cli
+      - name: Build packages
+        run: npm run build:deps
       
       - name: Dry run release
         env:
