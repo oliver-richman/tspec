@@ -1,0 +1,45 @@
+{
+  "name": "@tspec/cli",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "tspec": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "testing",
+    "cli",
+    "typescript",
+    "tspec",
+    "test-runner"
+  ],
+  "author": {
+    "name": "Oliver Richman",
+    "email": "oliver.richman@outlook.com",
+    "url": "https://github.com/oliver-richman"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@tspec/core": "^0.1.0",
+    "esbuild": "^0.25.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oliver-richman/tspec.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/oliver-richman/tspec/issues"
+  },
+  "homepage": "https://github.com/oliver-richman/tspec#readme"
+}

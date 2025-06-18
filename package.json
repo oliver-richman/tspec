@@ -1,0 +1,98 @@
+{
+  "name": "tspec",
+  "version": "0.1.0",
+  "description": "A modern, TypeScript-first testing framework designed for seamless testing of TypeScript applications",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:core": "npm run build --workspace=packages/core",
+    "build:assert": "npm run build --workspace=packages/assert",
+    "build:mock": "npm run build --workspace=packages/mock",
+    "build:cli": "npm run build --workspace=packages/cli",
+    "dev": "npm run dev --workspaces",
+    "test": "node packages/cli/dist/index.js",
+    "test:verbose": "node packages/cli/dist/index.js --verbose",
+    "test:basic": "node packages/cli/dist/index.js --testMatch '**/basic.tspec.ts'",
+    "test:mocking": "node packages/cli/dist/index.js --testMatch '**/mocking.tspec.ts'",
+    "test:assertions": "node packages/cli/dist/index.js --testMatch '**/enhanced-assertions.tspec.ts'",
+    "clean": "npm run clean --workspaces && rm -rf dist coverage",
+    "clean:packages": "npm run clean --workspaces",
+    "lint": "echo 'Linting not yet configured'",
+    "format": "echo 'Formatting not yet configured'",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build",
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run",
+    "version:sync": "node scripts/sync-versions.cjs sync",
+    "version:bump": "node scripts/sync-versions.cjs bump",
+    "version:check": "node scripts/sync-versions.cjs version",
+    "commit": "git-cz"
+  },
+  "keywords": [
+    "typescript",
+    "testing",
+    "test-framework",
+    "tspec",
+    "jest-alternative",
+    "vitest-alternative",
+    "unit-testing",
+    "mocking",
+    "assertions",
+    "async-testing"
+  ],
+  "author": {
+    "name": "Oliver Richman",
+    "email": "oliver.richman@outlook.com",
+    "url": "https://github.com/oliver-richman"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/oliver-richman/tspec#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oliver-richman/tspec.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oliver-richman/tspec/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "esbuild": "^0.25.5",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^10.0.3",
+    "@semantic-release/npm": "^12.0.0",
+    "semantic-release": "^23.0.0",
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0"
+  },
+  "dependencies": {
+    "glob": "^11.0.3"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "npm run lint",
+      "npm run format"
+    ],
+    "*.{json,md}": [
+      "npm run format"
+    ]
+  }
+}

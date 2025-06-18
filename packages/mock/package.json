@@ -1,0 +1,38 @@
+{
+  "name": "@tspec/mock",
+  "version": "0.1.0",
+  "description": "Mocking utilities for TSpec testing framework",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "testing",
+    "mocking",
+    "typescript"
+  ],
+  "author": {
+    "name": "Oliver Richman",
+    "email": "oliver.richman@outlook.com",
+    "url": "https://github.com/oliver-richman"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oliver-richman/tspec.git",
+    "directory": "packages/mock"
+  },
+  "bugs": {
+    "url": "https://github.com/oliver-richman/tspec/issues"
+  },
+  "homepage": "https://github.com/oliver-richman/tspec#readme"
+}
