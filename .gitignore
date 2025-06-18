@@ -12,6 +12,10 @@ coverage/
 # TypeScript
 *.tsbuildinfo
 
+# Prevent compiled JS files in src directories
+packages/*/src/*.js
+packages/*/src/*.d.ts
+
 # IDE
 .vscode/
 .idea/

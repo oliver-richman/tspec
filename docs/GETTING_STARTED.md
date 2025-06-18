@@ -18,7 +18,7 @@ TSpec is a modern, TypeScript-first testing framework that provides:
 
 ### Prerequisites
 
-- Node.js 18 or higher
+- Node.js 20 or higher
 - Basic TypeScript knowledge
 - A TypeScript project
 

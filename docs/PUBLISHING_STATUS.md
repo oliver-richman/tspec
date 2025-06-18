@@ -70,7 +70,7 @@ type(scope): description
 
 ### GitHub Actions
 - `.github/workflows/release.yml` - Main CI/CD pipeline
-- Tests on Node.js 18 & 20
+- Tests on Node.js 20 & 22
 - Automated dry-run before actual release
 - Publishes to npm on success
 

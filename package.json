@@ -11,7 +11,7 @@
     "build": "npm run build:deps",
     "build:deps": "npm run build -w @tspec/core && npm run build -w @tspec/assert && npm run build -w @tspec/mock && npm run build -w @tspec/cli",
     "build:parallel": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
+    "test": "node packages/cli/dist/index.js",
     "lint": "npx eslint . --ext .ts,.tsx --max-warnings 0",
     "lint:fix": "npx eslint . --ext .ts,.tsx --fix",
     "format": "npx prettier --write .",

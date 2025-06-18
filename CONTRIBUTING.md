@@ -6,7 +6,7 @@ Thank you for your interest in contributing to TSpec! This document provides gui
 
 ### Prerequisites
 
-- Node.js 18 or higher
+- Node.js 20 or higher
 - npm (comes with Node.js)
 - Git
 - TypeScript knowledge

@@ -7,7 +7,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "test": "echo \"No unit tests - integration tests run via TSpec CLI\""
   },
   "keywords": [
     "testing",
