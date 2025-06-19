@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/oliver-richman/tspec/compare/v1.2.0...v1.3.0) (2025-06-19)
+
+
+### Bug Fixes
+
+* **ci:** use GH_ADMIN_TOKEN for branch protection bypass in releases ([#2](https://github.com/oliver-richman/tspec/issues/2)) ([eeb66c4](https://github.com/oliver-richman/tspec/commit/eeb66c4b0b5cab8c5a91fa85f2e1bffc650ba39f))
+
+
+### Features
+
+* **docs:** add automated package README generation system ([c9d6f05](https://github.com/oliver-richman/tspec/commit/c9d6f05ccbde4734948c450d9f657b2519458260))
+* **docs:** add automated package README generation system ([c8cce38](https://github.com/oliver-richman/tspec/commit/c8cce382f9eaaece0bfd3d4d77800919e67092df))
+
 # [1.2.0](https://github.com/oliver-richman/tspec/compare/v1.1.0...v1.2.0) (2025-06-18)
 
 
