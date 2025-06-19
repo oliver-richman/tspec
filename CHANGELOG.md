@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/oliver-richman/tspec/compare/v1.3.0...v1.4.0) (2025-06-19)
+
+
+### Features
+
+* **docs:** update README to include roadmap and enhance feature descriptions ([2b59254](https://github.com/oliver-richman/tspec/commit/2b592547789fb7d0726b82258393dc3e4ff858de))
+
 # [1.3.0](https://github.com/oliver-richman/tspec/compare/v1.2.0...v1.3.0) (2025-06-19)
 
 
