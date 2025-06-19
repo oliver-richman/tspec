@@ -27,7 +27,7 @@
     ["@semantic-release/npm", {
       "pkgRoot": "packages/mock"
     }],
-    ["@semantic-release/npm", {
+        ["@semantic-release/npm", {
       "pkgRoot": "packages/cli"
     }],
     ["@semantic-release/git", {
