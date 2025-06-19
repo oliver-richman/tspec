@@ -8,10 +8,10 @@
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| **Automated Releases** | ✅ Complete | Merge to main/develop triggers automatic releases |
+| **Automated Releases** | ✅ Complete | Merge to main/beta triggers automatic releases |
 | **Synchronized Versioning** | ✅ Complete | All packages maintain same version automatically |
 | **Conventional Commits** | ✅ Complete | Automatic version bumping and changelog generation |
-| **Multi-Channel Releases** | ✅ Complete | main→latest, develop→beta, feat→alpha support |
+| **Multi-Channel Releases** | ✅ Complete | main→latest, beta→beta, feat→alpha support |
 | **Dry-Run Testing** | ✅ Complete | Safe testing before actual releases |
 | **Professional CI/CD** | ✅ Complete | GitHub Actions with comprehensive testing |
 | **Git Hooks** | ✅ Complete | Pre-commit validation and conventional commits |
@@ -40,14 +40,14 @@ All TSpec packages are configured for npm organization publishing:
 ### Branch Strategy
 ```
 main (latest)           - Stable production releases
-├── develop (beta)      - Beta testing channel
+├── beta (beta)         - Beta testing channel
 ├── feature/* (alpha)   - Development branches
 └── hotfix/*           - Emergency fixes
 ```
 
 ### Automation Triggers
 - **Push to main** → Stable release (`@tspec/core@1.2.0`)
-- **Push to develop** → Beta release (`@tspec/core@1.2.0-beta.1`)
+- **Push to beta** → Beta release (`@tspec/core@1.2.0-beta.1`)
 - **Manual only** → Alpha releases (`@tspec/core@1.2.0-alpha.3`)
 
 ## 📝 Conventional Commits
