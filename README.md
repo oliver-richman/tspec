@@ -58,6 +58,7 @@ tspec
 - [CLI Reference](#️-cli-reference)
 - [Examples](#-examples)
 - [Architecture](#️-architecture)
+- [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 
 ## ✨ Features
@@ -65,12 +66,12 @@ tspec
 ### 🎯 **TypeScript-First Design**
 - Native TypeScript support with full type safety
 - Zero configuration required for basic usage
-- Automatic TypeScript compilation with tsx
+- Automatic TypeScript compilation with esbuild
 - IntelliSense support for all APIs
 
 ### 🧪 **Comprehensive Testing APIs**
 - **Test Organization**: `describe()`, `test()`, `it()` for structuring tests
-- **Rich Assertions**: 16+ assertion methods covering all use cases
+- **Rich Assertions**: Comprehensive assertion methods with async support
 - **Async Support**: Full Promise testing with `resolves`/`rejects`
 - **Mocking System**: Function mocks, spies, and object method replacement
 
@@ -176,7 +177,7 @@ describe('Service with Dependencies', () => {
     const service = new UserService(mockApiCall);
     
     service.getUser('123');
-    expect(mockApiCall).toHaveBeenCalledWith('123');
+    expect(mockApiCall.toHaveBeenCalledWith('123')).toBe(true);
   });
 
   test('spies on existing methods', () => {
@@ -184,7 +185,7 @@ describe('Service with Dependencies', () => {
     const logSpy = spyOn(console, 'log');
     
     service.logUser({ name: 'Alice' });
-    expect(logSpy).toHaveBeenCalledWith('User: Alice');
+    expect(logSpy.toHaveBeenCalledWith('User: Alice')).toBe(true);
     
     logSpy.mockRestore();
   });
@@ -300,7 +301,7 @@ mockFn.mockThrowOnce(error)                // Throw error once
 ```typescript
 mockFn.toHaveBeenCalled()                  // Was called at least once
 mockFn.toHaveBeenCalledTimes(count)        // Called exact number of times
-mockFn.toHaveBeenCalledWith(...args)       // Called with specific arguments
+mockFn.toHaveBeenCalledWith(...args)       // Returns boolean: called with specific arguments
 mockFn.toHaveBeenLastCalledWith(...args)   // Last call had specific arguments
 mockFn.toHaveReturnedWith(value)           // Returned specific value
 ```
@@ -346,41 +347,16 @@ const config: TSpecConfig = {
 
   // Execution
   timeout: 10000,
-  parallel: false,
-  maxWorkers: 1,
 
   // Output
   verbose: false,
   silent: false,
 
-  // Setup (future)
+  // Setup (basic configuration for now)
   setupFilesAfterEnv: [],
-  globalSetup: undefined,
-  globalTeardown: undefined,
 
-  // Coverage (future)
-  collectCoverage: false,
-  coverageDirectory: 'coverage',
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80
-    }
-  },
-
-  // TypeScript
-  extensionsToTreatAsEsm: ['.ts'],
-  moduleFileExtensions: ['ts', 'js', 'json'],
-
-  // Environment
-  testEnvironment: 'node',
-
-  // Mocks
-  clearMocks: true,
-  resetMocks: false,
-  restoreMocks: true
+  // TypeScript support
+  extensionsToTreatAsEsm: ['.ts']
 };
 
 export default config;
@@ -395,8 +371,7 @@ export default config;
 | `timeout` | `number` | `5000` | Default test timeout (ms) |
 | `verbose` | `boolean` | `false` | Enable detailed output |
 | `silent` | `boolean` | `false` | Suppress non-error output |
-| `parallel` | `boolean` | `false` | Run tests in parallel |
-| `maxWorkers` | `number` | `1` | Maximum worker processes |
+| `setupFilesAfterEnv` | `string[]` | `[]` | Setup files to run after test environment setup |
 
 ## 🖥️ CLI Reference
 
@@ -434,8 +409,7 @@ tspec "**/user*.tspec.ts"             # Positional patterns
 # Execution
 tspec --timeout 30000                  # Override timeout
 
-# Future features
-tspec --watch                          # Watch mode (planned)
+
 ```
 
 ### Examples
@@ -510,43 +484,12 @@ describe('API Client', () => {
       email: 'john@example.com'
     });
     
-    expect(mockFetch).toHaveBeenCalledWith('https://api.example.com/users/123');
+    expect(mockFetch.toHaveBeenCalledWith('https://api.example.com/users/123')).toBe(true);
   });
 });
 ```
 
-### Testing Database Operations (Future)
 
-```typescript
-import { describe, test, beforeEach, afterEach } from '@tspec/core';
-import { expect } from '@tspec/assert';
-import { createTestDatabase } from '@tspec/database'; // Future package
-
-describe('User Repository', () => {
-  let db: TestDatabase;
-  let userRepo: UserRepository;
-
-  beforeEach(async () => {
-    db = await createTestDatabase();
-    userRepo = new UserRepository(db);
-  });
-
-  afterEach(async () => {
-    await db.cleanup();
-  });
-
-  test('creates and retrieves user', async () => {
-    const userData = { name: 'Bob', email: 'bob@example.com' };
-    const user = await userRepo.create(userData);
-    
-    expect(user.id).toBeDefined();
-    expect(user.name).toBe('Bob');
-    
-    const retrieved = await userRepo.findById(user.id);
-    expect(retrieved).toEqual(user);
-  });
-});
-```
 
 ## 🏗️ Architecture
 
@@ -560,8 +503,7 @@ tspec/
 │   ├── core/          # Test runner and framework core
 │   ├── assert/        # Assertion library
 │   ├── mock/          # Mocking utilities  
-│   ├── cli/           # Command-line interface
-│   └── integrations/  # Future: Framework integrations
+│   └── cli/           # Command-line interface
 ├── examples/          # Example test files
 └── docs/             # Additional documentation
 ```
@@ -569,57 +511,34 @@ tspec/
 ### Core Concepts
 
 #### Test Discovery
-- Uses glob patterns to find test files
-- Supports multiple file extensions
-- Configurable ignore patterns
-- Automatic TypeScript compilation
+- Uses glob patterns to find `.tspec.ts` files
+- Automatic file discovery with configurable patterns
+- Configurable ignore patterns for excluding directories
+- Supports custom test file extensions
 
 #### Test Execution
-- Sequential execution by default
-- Parallel execution (planned)
-- Isolated test environments
-- Proper error handling and reporting
+- Sequential test execution
+- Individual test isolation
+- Comprehensive error handling and stack traces
+- Result aggregation and reporting
 
 #### Type Safety
-- Full TypeScript integration
-- Type-safe assertions
-- Generic mock functions
-- IntelliSense support
+- Native TypeScript compilation with esbuild
+- Type-safe assertion methods with generics
+- Strongly-typed mock functions
+- Full IntelliSense support throughout
 
 ### Design Principles
 
-1. **TypeScript-First**: Built for TypeScript, works with JavaScript
-2. **Zero Config**: Works out of the box, configurable when needed
-3. **Developer Experience**: Clear APIs, helpful error messages
-4. **Performance**: Fast execution, minimal overhead
-5. **Extensibility**: Plugin system for future enhancements
+1. **TypeScript-First**: Built specifically for TypeScript developers
+2. **Zero Config**: Works immediately with sensible defaults
+3. **Developer Experience**: Clear APIs and helpful error messages
+4. **Simplicity**: Focused feature set without unnecessary complexity
+5. **Reliability**: Stable core with predictable behavior
 
-## 🎯 Roadmap
+## 🗺️ Roadmap
 
-### Phase 1: Core Framework ✅
-- [x] Basic test runner
-- [x] Assertion library  
-- [x] Mocking system
-- [x] Configuration system
-- [x] CLI interface
-
-### Phase 2: Enhanced Features (In Progress)
-- [ ] Watch mode
-- [ ] Parallel execution
-- [ ] Coverage reporting
-- [ ] Snapshot testing
-
-### Phase 3: Integrations (Planned)
-- [ ] React testing utilities
-- [ ] Database testing helpers
-- [ ] HTTP request mocking
-- [ ] VS Code extension
-
-### Phase 4: Enterprise Features (Future)
-- [ ] Test reporting formats
-- [ ] CI/CD integrations
-- [ ] Performance testing
-- [ ] Visual regression testing
+For information about current features, planned functionality, and development progress, see our [**Roadmap**](roadmap.md).
 
 ## 🤝 Contributing
 
@@ -631,7 +550,7 @@ If you want to contribute to TSpec development:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/tspec.git
+git clone https://github.com/oliver-richman/tspec.git
 cd tspec
 
 # Install dependencies
@@ -662,7 +581,7 @@ npm run dev --workspace=packages/core
 TSpec is currently in active development. To use it now:
 
 1. Clone and build from source (instructions above)
-2. The framework is fully functional with 47 passing tests
+2. The framework is fully functional for basic testing
 3. Ready for basic TypeScript testing and mocking
 4. Package publication coming soon
 
@@ -678,7 +597,7 @@ TSpec is inspired by the best parts of Jest, Vitest, and other testing framework
 
 **TSpec** - Making TypeScript testing simple, powerful, and enjoyable.
 
-For more information, visit our [documentation site](https://tspec.dev) or join our [Discord community](https://discord.gg/tspec).
+For more information, see our documentation links above.
 
 ## 📖 Documentation
 
@@ -686,79 +605,8 @@ For more information, visit our [documentation site](https://tspec.dev) or join 
 - **[API Reference](docs/API_REFERENCE.md)** - Complete API documentation for all packages
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Advanced configuration options
 - **[Examples](examples/)** - Real-world testing examples and patterns
-- **[Migration Guide](docs/MIGRATION.md)** - Migrating from other testing frameworks
-- **[FAQ](docs/FAQ.md)** - Frequently asked questions and troubleshooting
+
 
 ## 🌟 Current Status
 
-TSpec is currently in active development with the following implemented features:
-
-### ✅ **Completed Features**
-
-#### **Core Testing Framework**
-- Test definition with `describe()`, `test()`, and `it()`
-- TypeScript file discovery with `.tspec.ts` extension
-- Automatic TypeScript compilation using tsx
-- Test execution with proper error handling and timing
-- Test result reporting with pass/fail counts
-
-#### **Assertion Library (@tspec/assert)**
-- **Basic Assertions**: `toBe()`, `toEqual()`, `toBeNull()`, `toBeUndefined()`, `toBeTruthy()`, `toBeFalsy()`
-- **Enhanced Assertions**: `toThrow()`, `toContain()`, `toMatch()`, `toBeCloseTo()`
-- **Async Assertions**: Full `resolves` and `rejects` support with all assertion methods
-- **Type Safety**: Full TypeScript integration with proper generic typing
-
-#### **Mocking System (@tspec/mock)**
-- **Mock Functions**: Create mock functions with `fn()` and `mock()`
-- **Call Tracking**: Track calls with arguments, return values, and timestamps
-- **Return Control**: `mockReturnValue()`, `mockReturnValueOnce()`, `mockImplementation()`
-- **Async Mocking**: `mockResolvedValue()`, `mockRejectedValue()`, `mockThrow()`
-- **Spy Functions**: `spyOn()` for wrapping existing object methods
-- **Mock Assertions**: `toHaveBeenCalled()`, `toHaveBeenCalledWith()`, etc.
-- **Mock Management**: `mockClear()`, `mockReset()`, `mockRestore()`
-
-#### **Configuration System**
-- **TypeScript Config Files**: Support for `tspec.config.ts` with full typing
-- **File Discovery**: Configurable test patterns with `testMatch` and `testIgnore`
-- **CLI Integration**: Command-line options override config file settings
-- **Error Handling**: Comprehensive config validation and error reporting
-
-#### **CLI Interface (@tspec/cli)**
-- **Basic Commands**: `--help`, `--version`, test execution
-- **Configuration**: `--config` for custom config files
-- **Output Control**: `--verbose` and `--silent` modes
-- **Test Selection**: `--testMatch` for filtering test files
-- **Execution Options**: `--timeout` for test timeout override
-- **Exit Codes**: Proper exit codes for CI/CD integration
-
-### 📊 **Test Coverage**
-
-Current test suite includes **47 total tests** covering:
-- **36 core framework tests** (basic functionality)
-- **11 mocking examples** (comprehensive mocking scenarios)
-
-All tests are passing and demonstrate:
-- Basic math operations and string manipulation
-- Object and array comparisons
-- Error handling and async operations
-- Mock function creation and call tracking
-- Service mocking and dependency injection
-- Spy functionality and method restoration
-
-### 🔄 **Known Limitations**
-
-- **Parallel Execution**: Currently sequential only (parallel planned)
-- **Watch Mode**: Not yet implemented (coming soon)
-- **Coverage Reporting**: Infrastructure in place, implementation pending
-- **Setup/Teardown Hooks**: `beforeEach`, `afterEach` not yet implemented
-- **Test Filtering**: Basic pattern matching only (advanced filtering planned)
-
-### 🚀 **Next Steps**
-
-The framework is ready for:
-1. **Basic TypeScript testing** - Full feature set available
-2. **Mocking complex dependencies** - Comprehensive mocking system
-3. **CI/CD Integration** - Proper exit codes and error reporting
-4. **Configuration customization** - Flexible config system
-
-For production use, we recommend waiting for the completion of parallel execution and watch mode features, currently in development. 
+TSpec is currently in active development. 
