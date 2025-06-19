@@ -48,11 +48,11 @@ git checkout -b feat/new-feature
 npm run commit
 # This opens an interactive commit wizard
 
-# 3. Push and create PR to 'develop'
+# 3. Push and create PR to 'beta'
 git push origin feat/new-feature
-# Create PR: feat/new-feature → develop
+# Create PR: feat/new-feature → beta
 
-# 4. After merge to develop → automatic beta release!
+# 4. After merge to beta → automatic beta release!
 # Packages published as: @tspec/core@1.2.0-beta.1
 ```
 
@@ -61,8 +61,8 @@ git push origin feat/new-feature
 # 1. Test beta release thoroughly
 npm install @tspec/core@beta
 
-# 2. When ready, merge develop → main
-# Create PR: develop → main
+# 2. When ready, merge beta → main
+# Create PR: beta → main
 
 # 3. After merge to main → automatic stable release!
 # Packages published as: @tspec/core@1.2.0
@@ -146,7 +146,7 @@ npm info @tspec/core versions --json
 | Branch | npm Tag | Purpose | Use Case |
 |--------|---------|---------|----------|
 | `main` | `latest` | Stable | Production use |
-| `develop` | `beta` | Testing | Preview features |
+| `beta` | `beta` | Testing | Preview features |
 | `feat/*` | `alpha-*` | Development | Experimental |
 
 ### Install Specific Channels
@@ -194,4 +194,4 @@ git merge release/2.0.0
 
 ---
 
-**🎯 TL;DR**: Use `npm run commit`, merge to `develop` for beta, merge to `main` for stable. Everything else is automated! 🚀 
+**🎯 TL;DR**: Use `npm run commit`, merge to `beta` for beta, merge to `main` for stable. Everything else is automated! 🚀 
