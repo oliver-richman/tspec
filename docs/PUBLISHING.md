@@ -76,7 +76,7 @@ Branch protection rules for 'main':
 
 ```
 main                    → latest (stable releases)
-├── develop            → beta (beta releases)  
+├── beta               → beta (beta releases)  
 ├── feature/xyz        → (development branches)
 ├── hotfix/xyz         → (urgent fixes)
 └── release/x.y.z      → (release preparation)
@@ -87,7 +87,7 @@ main                    → latest (stable releases)
 | Branch | npm Tag | Purpose | Auto-publish |
 |--------|---------|---------|--------------|
 | `main` | `latest` | Stable releases | ✅ Yes |
-| `develop` | `beta` | Beta testing | ✅ Yes |
+| `beta` | `beta` | Beta testing | ✅ Yes |
 | `feature/*` | `alpha-{sha}` | Development | ⚠️ Manual only |
 
 ### Version Strategy
@@ -148,7 +148,7 @@ graph TD
     B --> C[Commit with Conventional Messages]
     C --> D[Create Pull Request]
     D --> E[Code Review]
-    E --> F[Merge to Develop]
+    E --> F[Merge to Beta]
     F --> G[Auto Beta Release]
     G --> H[Testing & Validation]
     H --> I[Merge to Main]
@@ -164,7 +164,7 @@ name: Release
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, beta]
   pull_request:
     branches: [main]
 
@@ -359,12 +359,12 @@ git commit -m "docs(assert): document toBeInstanceOf method"
 
 # 3. Push and create PR
 git push origin feature/new-assertion-methods
-# Create PR to 'develop' branch
+# Create PR to 'beta' branch
 
-# 4. After review, merge to develop
+# 4. After review, merge to beta
 # → Triggers automatic beta release (e.g., 0.2.0-beta.1)
 
-# 5. Test beta release, then merge develop to main
+# 5. Test beta release, then merge beta to main
 # → Triggers automatic stable release (e.g., 0.2.0)
 ```
 
@@ -381,8 +381,8 @@ git commit -m "fix(core): resolve memory leak in test runner"
 # 3. Create PR directly to main
 # → After merge, triggers patch release (e.g., 0.1.1)
 
-# 4. Merge main back to develop to sync
-git checkout develop
+# 4. Merge main back to beta to sync
+git checkout beta
 git merge main
 ```
 

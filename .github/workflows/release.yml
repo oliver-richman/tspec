@@ -2,12 +2,12 @@ name: Release
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, beta]
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta')
     permissions:
       contents: write
       issues: write
