@@ -107,6 +107,9 @@ tspec
 
 # With verbose output
 tspec --verbose
+
+# Watch mode - automatically re-run tests when files change
+tspec --watch
 ```
 
 **If building from source (current):**
@@ -116,6 +119,9 @@ node packages/cli/dist/index.js
 
 # Or with verbose output
 node packages/cli/dist/index.js --verbose
+
+# Watch mode - automatically re-run tests when files change
+node packages/cli/dist/index.js --watch
 ```
 
 You should see output like:
@@ -436,6 +442,105 @@ node packages/cli/dist/index.js --testMatch "**/*.unit.tspec.ts"
 # Override timeout
 node packages/cli/dist/index.js --timeout 10000
 ```
+
+## Watch Mode - Development Made Easy
+
+TSpec includes a powerful watch mode that automatically re-runs your tests when files change, making development faster and more efficient.
+
+### Starting Watch Mode
+
+```bash
+# Basic watch mode
+tspec --watch
+
+# Watch with verbose output  
+tspec --watch --verbose
+
+# Watch specific test patterns
+tspec --watch --testMatch "**/*.unit.tspec.ts"
+```
+
+### Watch Mode Features
+
+**🔍 Smart Test Selection**
+- Only runs tests affected by changed files
+- Analyzes import dependencies automatically
+- Significantly faster than running all tests
+
+**⌨️ Interactive Commands**
+- Press `a` to run all tests
+- Press `f` to run only failed tests  
+- Press `h` or `?` for help
+- Press `q` to quit watch mode
+- Press `Enter` to re-run affected tests
+
+**📋 Clear Output**
+- Shows which files changed
+- Displays test results with timestamps
+- Indicates watching status and available commands
+
+### Example Watch Mode Session
+
+```
+🚀 TSpec Watch Mode Started
+
+📁 Found 12 test files
+🔍 Patterns: **/*.tspec.ts, **/*.test.ts, **/*.spec.ts
+
+✅ Tests: 24 passed, 0 failed, 24 total
+  ✓ Calculator > should add numbers correctly (1ms)
+  ✓ Calculator > should handle edge cases (0ms)
+  ...
+
+📋 Watching for changes...
+🔍 Patterns: **/*.tspec.ts, **/*.test.ts, **/*.spec.ts
+
+⌨️  Interactive Commands:
+  • Press "a" to run all tests
+  • Press "f" to run only failed tests
+  • Press "h" or "?" for help
+  • Press "q" to quit
+  • Press Enter to re-run affected tests
+  • Press Ctrl+C to exit
+
+[10:30:15] 📁 File change: src/calculator.ts
+Running 3 affected tests...
+
+✅ Tests: 3 passed, 0 failed, 3 total
+📊 Ran 1 affected test files
+
+📋 Watching for changes...
+```
+
+### Configuration Options
+
+Add watch-specific options to your `tspec.config.ts`:
+
+```typescript
+export default {
+  // Enable/disable watch mode
+  watch: false,
+  
+  // Additional files to ignore in watch mode
+  watchIgnore: [
+    '**/temp/**',
+    '**/*.log'
+  ],
+  
+  // Debounce delay to prevent rapid re-runs (ms)
+  watchDebounce: 300,
+  
+  // Run all tests instead of smart selection
+  watchAll: false
+};
+```
+
+### Tips for Effective Watch Mode
+
+1. **Use specific test patterns** to watch only relevant tests
+2. **Keep test files small** for faster re-runs
+3. **Use interactive commands** to control test execution
+4. **Enable verbose mode** when debugging test issues
 
 ## Best Practices
 
