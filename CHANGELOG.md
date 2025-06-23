@@ -1,3 +1,18 @@
+# [1.5.0-beta.1](https://github.com/oliver-richman/tspec/compare/v1.4.0...v1.5.0-beta.1) (2025-06-23)
+
+
+### Features
+
+* **cli:** add interactive commands to watch mode ([12c845a](https://github.com/oliver-richman/tspec/commit/12c845ae1ba844e3fdbc4ca40e62992a6cc45519))
+* **cli:** implement smart test selection in watch mode ([ba0405e](https://github.com/oliver-richman/tspec/commit/ba0405eec74e8878a17c9e232747264491fb5267))
+* **cli:** implement watch mode functionality ([1399c9d](https://github.com/oliver-richman/tspec/commit/1399c9d2f5003fa10e21d2d0c5c6f6bdc1d0b117))
+* **core:** add chokidar dependency for watch mode ([f0dedd1](https://github.com/oliver-richman/tspec/commit/f0dedd195db05d02e773319a976986cfb15792f6))
+* **core:** add dependency tracker for smart test selection ([7362497](https://github.com/oliver-richman/tspec/commit/736249732d97327204c2cc5ee361bd38415cd19b))
+* **core:** add watch mode configuration options ([c33e13a](https://github.com/oliver-richman/tspec/commit/c33e13abcfcdc125c94e8300213ab282f3911b2b))
+* **core:** add WatchManager class for file watching ([94881be](https://github.com/oliver-richman/tspec/commit/94881be4fd3d2706285261132585a80f1e8fa9e7))
+* **docs:** enhance watch mode documentation and examples ([d52da68](https://github.com/oliver-richman/tspec/commit/d52da68a298a67fef97659f8e3b7137f3d9602d3))
+* **watch:** improve error handling and file type support ([0170209](https://github.com/oliver-richman/tspec/commit/017020926ddfce65c1744f0e5b49388d98724232))
+
 # [1.4.0](https://github.com/oliver-richman/tspec/compare/v1.3.0...v1.4.0) (2025-06-19)
 
 
