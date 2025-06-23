@@ -108,6 +108,16 @@ const config: TSpecConfig = {
     '^@utils/(.*)$': '<rootDir>/src/utils/$1'
   },
 
+  // Watch Mode Configuration
+  watch: false,             // Enable watch mode by default
+  watchIgnore: [
+    '**/temp/**',
+    '**/*.log',
+    '**/dist/**'
+  ],
+  watchDebounce: 300,       // Debounce delay in milliseconds
+  watchAll: false,          // Run all tests vs smart selection
+
   // Custom Configuration
   rootDir: process.cwd(),
   testPathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/node_modules/'],
@@ -383,6 +393,95 @@ Restore original function implementations automatically.
 restoreMocks: false  // Don't auto-restore mocks
 ```
 
+### Watch Mode
+
+TSpec's watch mode automatically re-runs tests when files change, providing instant feedback during development.
+
+#### `watch: boolean`
+**Default:** `false`
+
+Enable watch mode by default.
+
+```typescript
+watch: true  // Start in watch mode automatically
+```
+
+#### `watchIgnore: string[]`
+**Default:** `[]`
+
+Additional glob patterns to ignore in watch mode (beyond `testIgnore`).
+
+```typescript
+watchIgnore: [
+  '**/temp/**',
+  '**/*.log',
+  '**/dist/**',
+  '**/coverage/**',
+  '**/.cache/**',
+  '**/node_modules/**'  // Already ignored by default
+]
+```
+
+#### `watchDebounce: number`
+**Default:** `300` (milliseconds)
+
+Debounce delay to prevent rapid successive test runs during bulk file operations.
+
+```typescript
+watchDebounce: 500   // Wait 500ms before running tests
+watchDebounce: 100   // Faster response (100ms)
+```
+
+#### `watchAll: boolean`
+**Default:** `false`
+
+Control test selection strategy in watch mode.
+
+```typescript
+// Smart selection (default) - only run affected tests
+watchAll: false
+
+// Run all tests on every change
+watchAll: true
+```
+
+### Watch Mode Examples
+
+**Development Configuration:**
+```typescript
+// dev.config.ts
+import { TSpecConfig } from '@tspec/core';
+
+const config: TSpecConfig = {
+  testMatch: ['src/**/*.tspec.ts'],
+  watch: true,
+  watchDebounce: 200,      // Fast feedback
+  watchIgnore: [
+    '**/temp/**',
+    '**/*.log'
+  ],
+  verbose: true            // Detailed output for debugging
+};
+
+export default config;
+```
+
+**CI/Production Configuration:**
+```typescript
+// ci.config.ts
+import { TSpecConfig } from '@tspec/core';
+
+const config: TSpecConfig = {
+  testMatch: ['**/*.tspec.ts'],
+  watch: false,            // Never watch in CI
+  watchAll: false,         // Irrelevant in CI
+  silent: false,
+  timeout: 10000
+};
+
+export default config;
+```
+
 ### Path Mapping
 
 #### `moduleNameMapper: Record<string, string>`
@@ -445,8 +544,11 @@ tspec --config custom.ts --verbose --testMatch "**/*.unit.ts"
 # Timeout override
 tspec --timeout 30000     # 30 second timeout
 
+# Watch mode
+tspec --watch             # Enable watch mode
+tspec -w                  # Short form
+
 # Future options
-tspec --watch             # Watch mode (planned)
 tspec --coverage          # Enable coverage (planned)
 ```
 

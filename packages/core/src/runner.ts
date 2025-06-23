@@ -41,6 +41,35 @@ export class TestRunner {
     return results;
   }
 
+  async runAffectedSuites(allSuites: TestSuite[], affectedTestFiles: string[]): Promise<TestResult[]> {
+    const affectedResults: TestResult[] = [];
+    
+    // Filter suites to only run affected ones
+    const affectedSuites = allSuites.filter(suite => {
+      // Check if any of the affected test files match this suite
+      // We'll use a simple approach of checking if the suite name or any property matches
+      return affectedTestFiles.some(file => 
+        file.includes(suite.name) || suite.name.includes(file)
+      );
+    });
+    
+    if (affectedSuites.length === 0) {
+      // If no suites matched by name, fall back to running all suites
+      // This can happen if the dependency tracking doesn't perfectly match suite names
+      for (const suite of allSuites) {
+        const results = await this.runSuite(suite);
+        affectedResults.push(...results);
+      }
+    } else {
+      for (const suite of affectedSuites) {
+        const results = await this.runSuite(suite);
+        affectedResults.push(...results);
+      }
+    }
+    
+    return affectedResults;
+  }
+
   getResults(): TestResult[] {
     return this.results;
   }

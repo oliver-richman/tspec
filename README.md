@@ -44,6 +44,9 @@ npx tspec
 
 # If installed globally
 tspec
+
+# Watch mode - automatically re-run tests when files change
+tspec --watch
 ```
 
 > **Note:** TSpec is currently in development. For now, you'll need to build from source (see [Contributing](#-contributing) section).
@@ -77,6 +80,8 @@ tspec
 
 ### ⚡ **Developer Experience**
 - **Fast Execution**: Optimized test runner with minimal overhead
+- **Watch Mode**: Automatic test re-runs when files change with smart test selection
+- **Interactive Commands**: Control test execution with keyboard shortcuts (a/f/q/Enter)
 - **Clear Output**: Detailed test results with timing information
 - **Flexible CLI**: Multiple options for different workflows
 - **Configuration**: TypeScript config files with intelligent defaults
@@ -190,6 +195,54 @@ describe('Service with Dependencies', () => {
     logSpy.mockRestore();
   });
 });
+```
+
+### Watch Mode
+
+TSpec includes a powerful watch mode for development that automatically re-runs tests when files change:
+
+```bash
+# Start watch mode
+tspec --watch
+
+# Watch with verbose output
+tspec --watch --verbose
+
+# Watch specific test patterns
+tspec --watch --testMatch "**/*.unit.tspec.ts"
+```
+
+**Watch Mode Features:**
+- 🔍 **Smart Test Selection**: Only runs tests affected by changed files
+- ⌨️ **Interactive Commands**: Control execution with keyboard shortcuts
+- 📋 **Clear Output**: Shows file changes and test results with timestamps
+- ⚡ **Fast Feedback**: Debounced file watching prevents rapid re-runs
+
+**Interactive Commands:**
+- Press `a` to run all tests
+- Press `f` to run only failed tests
+- Press `h` or `?` for help
+- Press `q` to quit watch mode
+- Press `Enter` to re-run affected tests
+
+**Example Watch Session:**
+```
+🚀 TSpec Watch Mode Started
+
+📁 Found 12 test files
+✅ Tests: 24 passed, 0 failed, 24 total
+
+📋 Watching for changes...
+⌨️  Interactive Commands:
+  • Press "a" to run all tests
+  • Press "f" to run only failed tests
+  • Press "q" to quit
+
+[10:30:15] 📁 File change: src/calculator.ts
+Running 3 affected tests...
+
+✅ Tests: 3 passed, 0 failed, 3 total
+📊 Ran 1 affected test files
 ```
 
 ## 📚 API Reference

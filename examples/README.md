@@ -17,6 +17,13 @@ Comprehensive coverage of all TSpec assertion types:
 ### `mocking.tspec.ts`
 Complete mocking examples demonstrating TSpec's native mocking capabilities:
 
+### `watch-mode.tspec.ts`
+Interactive example demonstrating TSpec's watch mode capabilities:
+- Smart test selection based on file dependencies
+- Interactive command examples (a, f, h, q, Enter)
+- Dynamic tests that show instant feedback
+- Tips for effective watch mode usage
+
 ## Supported Assertions
 
 ### Basic Assertions
@@ -82,8 +89,14 @@ describe('Example Tests', () => {
 ## Running Examples
 
 ```bash
-# From project root
+# Run all examples
 node packages/cli/dist/index.js
+
+# Run specific example
+node packages/cli/dist/index.js examples/basic.tspec.ts
+
+# Try watch mode with interactive example
+node packages/cli/dist/index.js --watch examples/watch-mode.tspec.ts
 ```
 
 ## Mocking Capabilities
