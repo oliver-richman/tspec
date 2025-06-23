@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { findTestFiles, TestRunner, getSuites, clearSuites, loadConfig, validateConfig, TestResult, WatchManager, TSpecConfig } from '@tspec/core';
+import { findTestFiles, TestRunner, getSuites, clearSuites, loadConfig, validateConfig, TestResult, WatchManager, TSpecConfig, DependencyTracker } from '@tspec/core';
 import { register } from 'tsx/esm/api';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'url';
@@ -95,7 +95,9 @@ async function runWatchMode(config: TSpecConfig) {
   console.log('🔍 TSpec Watch Mode Started');
   
   const watchManager = new WatchManager(config.watchDebounce);
+  const dependencyTracker = new DependencyTracker();
   let isRunning = false;
+  let testFiles: string[] = [];
 
   // Setup graceful shutdown
   process.on('SIGINT', () => {
@@ -113,12 +115,15 @@ async function runWatchMode(config: TSpecConfig) {
       console.log('🔍 TSpec Watch Mode - Running tests...\n');
 
       // Find test files
-      const testFiles = await findTestFiles(config);
+      testFiles = await findTestFiles(config);
       
       if (testFiles.length === 0) {
         console.log('No test files found matching the patterns:', config.testMatch);
         return;
       }
+
+      // Build dependency graph for smart test selection
+      await dependencyTracker.analyzeDependencies(testFiles);
 
       // Clear existing suites
       clearSuites();
@@ -161,6 +166,66 @@ async function runWatchMode(config: TSpecConfig) {
     }
   };
 
+  const runAffectedTests = async (changedFiles: string[]) => {
+    if (isRunning) return;
+    isRunning = true;
+
+    try {
+      console.clear();
+      console.log('🔍 TSpec Watch Mode - Running affected tests...\n');
+
+      if (config.watchAll) {
+        // Run all tests if watchAll is enabled
+        await runAllTests();
+        return;
+      }
+
+      const affectedTestFiles = dependencyTracker.getAffectedTests(changedFiles);
+      
+      if (affectedTestFiles.length === 0) {
+        console.log('No tests affected by changes to:', changedFiles);
+        isRunning = false;
+        return;
+      }
+
+      console.log(`Found ${affectedTestFiles.length} affected test files`);
+
+      // Clear existing suites
+      clearSuites();
+      
+      // Register tsx for TypeScript support
+      const unregisterTsx = register();
+      
+      try {
+        // Import only affected test files  
+        for (const file of affectedTestFiles) {
+          await import(pathToFileURL(file).href + '?t=' + Date.now());
+        }
+      } finally {
+        unregisterTsx();
+      }
+      
+      // Run tests
+      const runner = new TestRunner();
+      const suites = getSuites();
+      
+      for (const suite of suites) {
+        await runner.runSuite(suite);
+      }
+      
+      if (!config.silent) {
+        runner.printResults();
+      }
+
+      console.log(`\n📋 Watching ${testFiles.length} test files...`);
+      console.log('📝 Press Ctrl+C to exit watch mode');
+    } catch (error) {
+      console.error('Error running affected tests:', error);
+    } finally {
+      isRunning = false;
+    }
+  };
+
   // Setup file watching
   const patterns = config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts'];
   const watchIgnore = [...(config.testIgnore || []), ...(config.watchIgnore || [])];
@@ -169,7 +234,7 @@ async function runWatchMode(config: TSpecConfig) {
   watchManager.onFileChange((filePath, event) => {
     if (!isRunning) {
       console.log(`\n📁 File ${event}: ${filePath}`);
-      runAllTests();
+      runAffectedTests([filePath]);
     }
   });
 
