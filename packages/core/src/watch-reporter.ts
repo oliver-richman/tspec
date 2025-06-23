@@ -79,7 +79,6 @@ export class WatchReporter {
       // Show all results
       results.forEach(result => {
         const symbol = result.status === 'passed' ? '✓' : '✗';
-        const color = result.status === 'passed' ? '' : '';
         console.log(`  ${symbol} ${result.suite} > ${result.test} (${result.duration}ms)`);
         
         if (result.error) {

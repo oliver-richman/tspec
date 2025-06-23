@@ -155,7 +155,7 @@ export class WatchManager {
   /**
    * Handle watcher errors and attempt recovery
    */
-  private handleWatcherError(error: Error): void {
+  private handleWatcherError(_error: Error): void {
     console.warn('Attempting to recover from watcher error...');
     
     // Don't attempt recovery too frequently

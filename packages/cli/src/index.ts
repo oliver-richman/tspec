@@ -128,7 +128,7 @@ async function runWatchMode(config: TSpecConfig) {
     console.error('Uncaught exception in watch mode:', error);
     gracefulShutdown();
   });
-  process.on('unhandledRejection', (reason, promise) => {
+  process.on('unhandledRejection', (reason, _promise) => {
     console.error('Unhandled rejection in watch mode:', reason);
     gracefulShutdown();
   });

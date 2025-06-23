@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { resolve, dirname, extname, join } from 'path';
+import { resolve, dirname, join } from 'path';
 import { existsSync } from 'fs';
 
 export interface DependencyMap {
