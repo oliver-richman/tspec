@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { findTestFiles, TestRunner, getSuites, clearSuites, loadConfig, validateConfig, TestResult } from '@tspec/core';
+import { findTestFiles, TestRunner, getSuites, clearSuites, loadConfig, validateConfig, TestResult, WatchManager, TSpecConfig } from '@tspec/core';
 import { register } from 'tsx/esm/api';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'url';
@@ -30,7 +30,7 @@ Options:
   --silent                Silent output (errors only)
   --timeout <ms>          Test timeout in milliseconds
   --testMatch <pattern>   Test file patterns (can be used multiple times)
-  --watch                 Watch files and re-run tests on changes
+  -w, --watch             Watch files and re-run tests on changes
 
 Examples:
   tspec                   Run all tests
@@ -58,7 +58,7 @@ function parseCliArgs(): CliOptions {
         silent: { type: 'boolean' },
         timeout: { type: 'string' },
         testMatch: { type: 'string', multiple: true },
-        watch: { type: 'boolean' }
+        watch: { type: 'boolean', short: 'w' }
       },
       allowPositionals: true
     });
@@ -89,6 +89,92 @@ function parseCliArgs(): CliOptions {
     console.error('Error parsing arguments:', (error as Error).message);
     process.exit(1);
   }
+}
+
+async function runWatchMode(config: TSpecConfig) {
+  console.log('🔍 TSpec Watch Mode Started');
+  
+  const watchManager = new WatchManager(config.watchDebounce);
+  let isRunning = false;
+
+  // Setup graceful shutdown
+  process.on('SIGINT', () => {
+    console.log('\n👋 Stopping watch mode...');
+    watchManager.stopWatching();
+    process.exit(0);
+  });
+
+  const runAllTests = async () => {
+    if (isRunning) return;
+    isRunning = true;
+
+    try {
+      console.clear();
+      console.log('🔍 TSpec Watch Mode - Running tests...\n');
+
+      // Find test files
+      const testFiles = await findTestFiles(config);
+      
+      if (testFiles.length === 0) {
+        console.log('No test files found matching the patterns:', config.testMatch);
+        return;
+      }
+
+      // Clear existing suites
+      clearSuites();
+      
+      // Register tsx for TypeScript support
+      const unregisterTsx = register();
+      
+      try {
+        // Import all test files
+        for (const file of testFiles) {
+          await import(pathToFileURL(file).href + '?t=' + Date.now());
+        }
+      } finally {
+        unregisterTsx();
+      }
+      
+      // Run tests
+      const runner = new TestRunner();
+      const suites = getSuites();
+      
+      for (const suite of suites) {
+        await runner.runSuite(suite);
+      }
+      
+      if (!config.silent) {
+        runner.printResults();
+      }
+
+      const results = runner.getResults();
+      const failedCount = results.filter((r: TestResult) => r.status === 'failed').length;
+      const passedCount = results.filter((r: TestResult) => r.status === 'passed').length;
+      const totalCount = results.length;
+
+      console.log(`\n📋 Watching ${testFiles.length} test files...`);
+      console.log('📝 Press Ctrl+C to exit watch mode');
+    } catch (error) {
+      console.error('Error running tests:', error);
+    } finally {
+      isRunning = false;
+    }
+  };
+
+  // Setup file watching
+  const patterns = config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts'];
+  const watchIgnore = [...(config.testIgnore || []), ...(config.watchIgnore || [])];
+  
+  watchManager.startWatching(patterns, watchIgnore);
+  watchManager.onFileChange((filePath, event) => {
+    if (!isRunning) {
+      console.log(`\n📁 File ${event}: ${filePath}`);
+      runAllTests();
+    }
+  });
+
+  // Run initial test suite
+  await runAllTests();
 }
 
 async function runTests() {
@@ -124,7 +210,7 @@ async function runTests() {
     }
 
     if (cliOptions.watch) {
-      console.log('⚠️  Watch mode is not yet implemented');
+      await runWatchMode(config);
       return;
     }
 
