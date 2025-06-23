@@ -1,6 +1,6 @@
 {
   "name": "tspec",
-  "version": "1.5.0-beta.1",
+  "version": "1.5.0",
   "description": "A modern, TypeScript-first testing framework designed for seamless testing of TypeScript applications",
   "private": true,
   "type": "module",
