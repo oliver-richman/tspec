@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { findTestFiles, TestRunner, getSuites, clearSuites, loadConfig, validateConfig, TestResult, WatchManager, TSpecConfig, DependencyTracker } from '@tspec/core';
+import { findTestFiles, TestRunner, getSuites, clearSuites, loadConfig, validateConfig, TestResult, WatchManager, TSpecConfig, DependencyTracker, WatchReporter } from '@tspec/core';
 import { register } from 'tsx/esm/api';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'url';
@@ -92,12 +92,17 @@ function parseCliArgs(): CliOptions {
 }
 
 async function runWatchMode(config: TSpecConfig) {
-  console.log('🔍 TSpec Watch Mode Started');
-  
   const watchManager = new WatchManager(config.watchDebounce);
   const dependencyTracker = new DependencyTracker();
+  const reporter = new WatchReporter({
+    showOnlyFailures: false,
+    showTimestamp: true,
+    clearConsole: true
+  });
   let isRunning = false;
   let testFiles: string[] = [];
+  let lastResults: TestResult[] = [];
+  let lastChangedFiles: string[] = [];
 
   // Setup graceful shutdown
   process.on('SIGINT', () => {
@@ -106,19 +111,153 @@ async function runWatchMode(config: TSpecConfig) {
     process.exit(0);
   });
 
+  // Setup stdin for interactive commands
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+  process.stdin.setEncoding('utf8');
+  
+  const handleKeyPress = (key: string) => {
+    if (isRunning) return; // Don't handle input while tests are running
+
+    switch (key) {
+      case 'a':
+      case 'A':
+        console.log('\n🔄 Running all tests...');
+        runAllTests();
+        break;
+      
+      case 'f':
+      case 'F':
+        console.log('\n🔄 Running failed tests...');
+        runFailedTests();
+        break;
+      
+      case 'q':
+      case 'Q':
+      case '\u0003': // Ctrl+C
+        console.log('\n👋 Stopping watch mode...');
+        watchManager.stopWatching();
+        process.exit(0);
+        break;
+      
+      case '\r': // Enter
+      case '\n':
+        if (lastChangedFiles.length > 0) {
+          console.log('\n🔄 Re-running affected tests...');
+          runAffectedTests(lastChangedFiles);
+        } else {
+          console.log('\n🔄 Running all tests...');
+          runAllTests();
+        }
+        break;
+      
+      case 'h':
+      case 'H':
+      case '?':
+        printInteractiveHelp();
+        break;
+    }
+  };
+
+  process.stdin.on('data', handleKeyPress);
+
+  const runFailedTests = async () => {
+    if (isRunning) return;
+    isRunning = true;
+
+    try {
+      const failedResults = lastResults.filter(r => r.status === 'failed');
+      
+      if (failedResults.length === 0) {
+        reporter.printInfo('No failed tests to re-run!');
+        isRunning = false;
+        return;
+      }
+
+      reporter.clearConsole();
+      reporter.printWatchHeader(testFiles.length);
+      console.log(`Re-running ${failedResults.length} failed tests...\n`);
+
+      // Get unique test files from failed results
+      const failedTestFiles = new Set<string>();
+      for (const result of failedResults) {
+        // Find the test file that contains this suite
+        for (const testFile of testFiles) {
+          if (testFile.includes(result.suite) || result.suite.includes(testFile)) {
+            failedTestFiles.add(testFile);
+          }
+        }
+      }
+
+      if (failedTestFiles.size === 0) {
+        // Fallback: run all tests if we can't map failed tests to files
+        await runAllTests();
+        return;
+      }
+
+      // Clear existing suites
+      clearSuites();
+      
+      // Register tsx for TypeScript support
+      const unregisterTsx = register();
+      
+      try {
+        // Import only test files that had failures
+        for (const file of failedTestFiles) {
+          await import(pathToFileURL(file).href + '?t=' + Date.now());
+        }
+      } finally {
+        unregisterTsx();
+      }
+      
+      // Run tests
+      const runner = new TestRunner();
+      const suites = getSuites();
+      
+      for (const suite of suites) {
+        await runner.runSuite(suite);
+      }
+      
+      const results = runner.getResults();
+      lastResults = results;
+      
+      if (!config.silent) {
+        reporter.printResults(results);
+      }
+
+      reporter.printWatchingStatus(config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts']);
+    } catch (error) {
+      reporter.printError(error as Error, 'running failed tests');
+    } finally {
+      isRunning = false;
+    }
+  };
+
+  const printInteractiveHelp = () => {
+    console.log('\n📝 Interactive Watch Mode Commands:');
+    console.log('  • Press "a" to run all tests');
+    console.log('  • Press "f" to run only failed tests');
+    console.log('  • Press "h" or "?" to show this help');
+    console.log('  • Press "q" to quit watch mode');
+    console.log('  • Press Enter to re-run affected tests');
+    console.log('  • Press Ctrl+C to exit');
+    console.log('');
+  };
+
   const runAllTests = async () => {
     if (isRunning) return;
     isRunning = true;
 
     try {
-      console.clear();
-      console.log('🔍 TSpec Watch Mode - Running tests...\n');
+      reporter.clearConsole();
+      reporter.printWatchHeader(testFiles.length || 0);
+      console.log('Running all tests...\n');
 
       // Find test files
       testFiles = await findTestFiles(config);
       
       if (testFiles.length === 0) {
-        console.log('No test files found matching the patterns:', config.testMatch);
+        reporter.printWarning('No test files found matching the patterns: ' + config.testMatch?.join(', '));
         return;
       }
 
@@ -148,19 +287,16 @@ async function runWatchMode(config: TSpecConfig) {
         await runner.runSuite(suite);
       }
       
+      const results = runner.getResults();
+      lastResults = results;
+      
       if (!config.silent) {
-        runner.printResults();
+        reporter.printResults(results);
       }
 
-      const results = runner.getResults();
-      const failedCount = results.filter((r: TestResult) => r.status === 'failed').length;
-      const passedCount = results.filter((r: TestResult) => r.status === 'passed').length;
-      const totalCount = results.length;
-
-      console.log(`\n📋 Watching ${testFiles.length} test files...`);
-      console.log('📝 Press Ctrl+C to exit watch mode');
+      reporter.printWatchingStatus(config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts']);
     } catch (error) {
-      console.error('Error running tests:', error);
+      reporter.printError(error as Error, 'running tests');
     } finally {
       isRunning = false;
     }
@@ -171,11 +307,12 @@ async function runWatchMode(config: TSpecConfig) {
     isRunning = true;
 
     try {
-      console.clear();
-      console.log('🔍 TSpec Watch Mode - Running affected tests...\n');
-
+      reporter.clearConsole();
+      reporter.printWatchHeader(testFiles.length);
+      
       if (config.watchAll) {
         // Run all tests if watchAll is enabled
+        console.log('Running all tests (watchAll enabled)...\n');
         await runAllTests();
         return;
       }
@@ -183,12 +320,13 @@ async function runWatchMode(config: TSpecConfig) {
       const affectedTestFiles = dependencyTracker.getAffectedTests(changedFiles);
       
       if (affectedTestFiles.length === 0) {
-        console.log('No tests affected by changes to:', changedFiles);
+        reporter.printInfo('No tests affected by changes to: ' + changedFiles.map(f => f.replace(process.cwd() + '/', '')).join(', '));
+        reporter.printWatchingStatus(config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts']);
         isRunning = false;
         return;
       }
 
-      console.log(`Found ${affectedTestFiles.length} affected test files`);
+      console.log(`Running ${affectedTestFiles.length} affected tests...\n`);
 
       // Clear existing suites
       clearSuites();
@@ -213,14 +351,16 @@ async function runWatchMode(config: TSpecConfig) {
         await runner.runSuite(suite);
       }
       
+      const results = runner.getResults();
+      lastResults = results;
+      
       if (!config.silent) {
-        runner.printResults();
+        reporter.printResults(results, affectedTestFiles.length);
       }
 
-      console.log(`\n📋 Watching ${testFiles.length} test files...`);
-      console.log('📝 Press Ctrl+C to exit watch mode');
+      reporter.printWatchingStatus(config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts']);
     } catch (error) {
-      console.error('Error running affected tests:', error);
+      reporter.printError(error as Error, 'running affected tests');
     } finally {
       isRunning = false;
     }
@@ -233,7 +373,8 @@ async function runWatchMode(config: TSpecConfig) {
   watchManager.startWatching(patterns, watchIgnore);
   watchManager.onFileChange((filePath, event) => {
     if (!isRunning) {
-      console.log(`\n📁 File ${event}: ${filePath}`);
+      lastChangedFiles = [filePath];
+      reporter.printFileChange(filePath, event);
       runAffectedTests([filePath]);
     }
   });
