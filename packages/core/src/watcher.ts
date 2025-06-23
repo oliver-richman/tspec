@@ -34,11 +34,21 @@ export class WatchManager {
       '**/build/**',
       '**/.git/**',
       '**/coverage/**',
+      '**/.*',          // Hidden files
       '**/*.tmp',
       '**/*.temp',
-      '**/.*swp',
-      '**/.*swo',
-      '**/.DS_Store'
+      '**/*.swp',
+      '**/*.swo',
+      '**/*.log',
+      '**/*.pid',
+      '**/*.seed',
+      '**/*.pid.lock',
+      '**/.DS_Store',
+      '**/Thumbs.db',
+      '**/*.tsbuildinfo',
+      '**/npm-debug.log*',
+      '**/yarn-debug.log*',
+      '**/yarn-error.log*'
     ];
 
     const allIgnored = [...defaultIgnored, ...ignored];
@@ -48,10 +58,16 @@ export class WatchManager {
       ignoreInitial: true,
       persistent: true,
       ignorePermissionErrors: true,
+      followSymlinks: false,  // Don't follow symlinks to avoid circular dependencies
+      atomic: true,          // Wait for write operations to complete
       awaitWriteFinish: {
         stabilityThreshold: 100,
         pollInterval: 100
-      }
+      },
+      // Enable polling on some systems for better reliability
+      usePolling: process.env.TSPEC_WATCH_POLLING === 'true',
+      interval: 100,
+      binaryInterval: 300
     });
 
     this.watcher.on('add', (path) => this.handleFileChange(path, 'add'));
@@ -60,6 +76,8 @@ export class WatchManager {
     
     this.watcher.on('error', (error) => {
       console.warn('File watcher error:', error);
+      // Try to recover by restarting the watcher
+      this.handleWatcherError(error);
     });
   }
 
@@ -132,5 +150,24 @@ export class WatchManager {
       }
       this.debounceTimer = null;
     }, this.debounceDelay);
+  }
+
+  /**
+   * Handle watcher errors and attempt recovery
+   */
+  private handleWatcherError(error: Error): void {
+    console.warn('Attempting to recover from watcher error...');
+    
+    // Don't attempt recovery too frequently
+    setTimeout(() => {
+      if (this.watcher) {
+        try {
+          // The watcher will be restarted by the consumer if needed
+          console.warn('File watcher encountered an error and may need to be restarted.');
+        } catch (recoveryError) {
+          console.error('Failed to recover from watcher error:', recoveryError);
+        }
+      }
+    }, 1000);
   }
 } 

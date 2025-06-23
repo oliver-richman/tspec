@@ -103,12 +103,34 @@ async function runWatchMode(config: TSpecConfig) {
   let testFiles: string[] = [];
   let lastResults: TestResult[] = [];
   let lastChangedFiles: string[] = [];
+  let consecutiveErrors = 0;
+  const MAX_CONSECUTIVE_ERRORS = 3;
+  let lastChangeTime = 0;
+  const MIN_CHANGE_INTERVAL = 500; // Minimum time between file change reactions
 
   // Setup graceful shutdown
-  process.on('SIGINT', () => {
+  const gracefulShutdown = () => {
     console.log('\n👋 Stopping watch mode...');
-    watchManager.stopWatching();
+    try {
+      watchManager.stopWatching();
+      process.stdin.setRawMode?.(false);
+      process.stdin.pause();
+    } catch (error) {
+      console.error('Error during shutdown:', error);
+    }
     process.exit(0);
+  };
+
+  process.on('SIGINT', gracefulShutdown);
+  process.on('SIGTERM', gracefulShutdown);
+  process.on('SIGHUP', gracefulShutdown);
+  process.on('uncaughtException', (error) => {
+    console.error('Uncaught exception in watch mode:', error);
+    gracefulShutdown();
+  });
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled rejection in watch mode:', reason);
+    gracefulShutdown();
   });
 
   // Setup stdin for interactive commands
@@ -135,9 +157,7 @@ async function runWatchMode(config: TSpecConfig) {
       case 'q':
       case 'Q':
       case '\u0003': // Ctrl+C
-        console.log('\n👋 Stopping watch mode...');
-        watchManager.stopWatching();
-        process.exit(0);
+        gracefulShutdown();
         break;
       
       case '\r': // Enter
@@ -226,8 +246,15 @@ async function runWatchMode(config: TSpecConfig) {
       }
 
       reporter.printWatchingStatus(config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts']);
+      consecutiveErrors = 0; // Reset error count on success  
     } catch (error) {
+      consecutiveErrors++;
       reporter.printError(error as Error, 'running failed tests');
+      
+      if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        reporter.printError(new Error(`Too many consecutive errors (${consecutiveErrors}). Watch mode may be unstable.`), 'error recovery');
+        reporter.printInfo('Consider restarting watch mode if problems persist.');
+      }
     } finally {
       isRunning = false;
     }
@@ -295,8 +322,15 @@ async function runWatchMode(config: TSpecConfig) {
       }
 
       reporter.printWatchingStatus(config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts']);
+      consecutiveErrors = 0; // Reset error count on success
     } catch (error) {
+      consecutiveErrors++;
       reporter.printError(error as Error, 'running tests');
+      
+      if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        reporter.printError(new Error(`Too many consecutive errors (${consecutiveErrors}). Watch mode may be unstable.`), 'error recovery');
+        reporter.printInfo('Consider restarting watch mode if problems persist.');
+      }
     } finally {
       isRunning = false;
     }
@@ -359,8 +393,15 @@ async function runWatchMode(config: TSpecConfig) {
       }
 
       reporter.printWatchingStatus(config.testMatch || ['**/*.tspec.ts', '**/*.test.ts', '**/*.spec.ts']);
+      consecutiveErrors = 0; // Reset error count on success  
     } catch (error) {
+      consecutiveErrors++;
       reporter.printError(error as Error, 'running affected tests');
+      
+      if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        reporter.printError(new Error(`Too many consecutive errors (${consecutiveErrors}). Watch mode may be unstable.`), 'error recovery');
+        reporter.printInfo('Consider restarting watch mode if problems persist.');
+      }
     } finally {
       isRunning = false;
     }
@@ -372,11 +413,17 @@ async function runWatchMode(config: TSpecConfig) {
   
   watchManager.startWatching(patterns, watchIgnore);
   watchManager.onFileChange((filePath, event) => {
-    if (!isRunning) {
-      lastChangedFiles = [filePath];
-      reporter.printFileChange(filePath, event);
-      runAffectedTests([filePath]);
+    const now = Date.now();
+    
+    // Prevent rapid successive runs
+    if (isRunning || (now - lastChangeTime) < MIN_CHANGE_INTERVAL) {
+      return;
     }
+    
+    lastChangeTime = now;
+    lastChangedFiles = [filePath];
+    reporter.printFileChange(filePath, event);
+    runAffectedTests([filePath]);
   });
 
   // Run initial test suite
