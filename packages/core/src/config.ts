@@ -12,6 +12,12 @@ export interface TSpecConfig {
   parallel?: boolean;
   maxWorkers?: number;
   
+  // Watch mode
+  watch?: boolean;
+  watchIgnore?: string[];
+  watchDebounce?: number;
+  watchAll?: boolean;
+  
   // Reporting
   verbose?: boolean;
   silent?: boolean;
@@ -52,6 +58,10 @@ const DEFAULT_CONFIG: TSpecConfig = {
   timeout: 5000,
   parallel: false,
   maxWorkers: 1,
+  watch: false,
+  watchIgnore: [],
+  watchDebounce: 300,
+  watchAll: false,
   verbose: false,
   silent: false,
   setupFilesAfterEnv: [],
@@ -118,6 +128,7 @@ export function mergeConfig(defaultConfig: TSpecConfig, userConfig: Partial<TSpe
     // Merge arrays instead of replacing
     testMatch: userConfig.testMatch || defaultConfig.testMatch,
     testIgnore: [...(defaultConfig.testIgnore || []), ...(userConfig.testIgnore || [])],
+    watchIgnore: [...(defaultConfig.watchIgnore || []), ...(userConfig.watchIgnore || [])],
     setupFilesAfterEnv: [...(defaultConfig.setupFilesAfterEnv || []), ...(userConfig.setupFilesAfterEnv || [])],
     extensionsToTreatAsEsm: [...(defaultConfig.extensionsToTreatAsEsm || []), ...(userConfig.extensionsToTreatAsEsm || [])],
     moduleFileExtensions: [...(defaultConfig.moduleFileExtensions || []), ...(userConfig.moduleFileExtensions || [])],
@@ -146,6 +157,10 @@ export function validateConfig(config: TSpecConfig): { isValid: boolean; errors:
 
   if (config.testMatch && config.testMatch.length === 0) {
     errors.push('testMatch cannot be empty');
+  }
+
+  if (config.watchDebounce && config.watchDebounce < 0) {
+    errors.push('watchDebounce must be a non-negative number');
   }
 
   if (config.coverageThreshold?.global) {
